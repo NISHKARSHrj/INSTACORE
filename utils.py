@@ -1,3 +1,8 @@
+from dotenv import load_dotenv
+
+def configure():
+    load_dotenv()
+
 UPLOAD_FOLDER = "static/uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 

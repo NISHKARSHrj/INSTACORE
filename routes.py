@@ -1,28 +1,46 @@
 import os
-from flask import request, jsonify
+from flask import request, jsonify, render_template, redirect,session
+from dotenv import load_dotenv 
 from werkzeug.utils import secure_filename
 from database import get_connection
 from datetime import datetime
-from utils import UPLOAD_FOLDER, ALLOWED_EXTENSIONS, allowed_files
+from utils import UPLOAD_FOLDER, configure,ALLOWED_EXTENSIONS, allowed_files
 
+load_dotenv()
 
 def register_routes(app):
 
     app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+    app.secret_key = os.getenv("SECRET_KEY")
+
+    if not app.secret_key:
+            import secrets
+            app.secret_key = secrets.token_hex(32)
+            print("⚠️  WARNING: No SECRET_KEY in .env file. Using random key!")
+    
     if not os.path.isdir(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
 
 
     @app.route("/")
-    def index():
-        return "Hello, World!"
-    # signup in the application
-    @app.route("/signup", methods=["POST"])
-    def signup():
-        data = request.get_json()
+    def home():
+        return redirect("/login")
+    
+    @app.route("/feed")
+    def feed():
+        if "user_id" not in session:
+            return redirect("/login")
 
-        name = data.get("name")
-        password = data.get("password")
+        return render_template("feed.html", user_id=session["user_id"])
+
+    # signup in the application
+    @app.route("/signup", methods=["GET", "POST"])
+    def signup():
+        if request.method == "GET":
+            return render_template("signup.html")
+
+        name = request.form.get("name")
+        password = request.form.get("password")
 
         if not name or not password:
             return jsonify({
@@ -42,17 +60,17 @@ def register_routes(app):
         cursor.execute("INSERT INTO users (user_name, user_password) VALUES (?, ?)", (name, password))
         conn.commit()
         conn.close()
-        return jsonify({
-            "message": "User created successfully"
-        }), 201
+        return redirect("/login")
     
     # login in the application
-    @app.route("/login", methods=["POST"])
+    @app.route("/login", methods=["GET", "POST"])
     def login():
-        data = request.get_json()
+        if request.method == "GET":
+            return render_template("login.html")
 
-        name = data.get("name")
-        password = data.get("password")
+
+        name = request.form.get("name")
+        password = request.form.get("password")
 
         conn = get_connection()
         cursor = conn.cursor()
@@ -67,13 +85,15 @@ def register_routes(app):
             return jsonify({
                 "error": "Invalid credentials"
             }), 401
+        
+        session["user_id"] = user[0]
 
-        return jsonify({
-            "message": "Login successful",
-            "user_id": user[0],
-            "user_name": user[1]
-        }), 200
+        return redirect("/feed")
     
+    @app.route("/logout")
+    def logout():
+        session.clear()
+        return redirect("/login")
     # post a new post
     @app.route("/posts", methods = ["POST"])
     def create_post():
