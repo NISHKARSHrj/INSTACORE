@@ -10,7 +10,7 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
+            user_name TEXT UNIQUE NOT NULL,
             user_password TEXT NOT NULL
         )
     """)
@@ -19,14 +19,16 @@ def init_db():
         CREATE TABLE IF NOT EXISTS posts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
+            
             content TEXT,
+            image_path TEXT,
             timestamp TEXT    
                    
         )
     """)
 
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS like (
+        CREATE TABLE IF NOT EXISTS likes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
             post_id INTEGER

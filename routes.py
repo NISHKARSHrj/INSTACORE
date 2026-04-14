@@ -1,11 +1,22 @@
+import os
 from flask import request, jsonify
+from werkzeug.utils import secure_filename
 from database import get_connection
+from datetime import datetime
+from utils import UPLOAD_FOLDER, ALLOWED_EXTENSIONS, allowed_files
+
 
 def register_routes(app):
+
+    app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+    if not os.path.isdir(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+
+
     @app.route("/")
     def index():
         return "Hello, World!"
-    
+    # signup in the application
     @app.route("/signup", methods=["POST"])
     def signup():
         data = request.get_json()
@@ -35,6 +46,7 @@ def register_routes(app):
             "message": "User created successfully"
         }), 201
     
+    # login in the application
     @app.route("/login", methods=["POST"])
     def login():
         data = request.get_json()
@@ -59,3 +71,64 @@ def register_routes(app):
         return jsonify({
             "message": "Login successful"
         }), 200
+    
+    # post a new post
+    @app.route("/posts", methods = ["POST"])
+    def create_post():
+        user_id =request.form.get("user_id")
+        content = request.form.get("content", "")
+        image = request.files.get("image")
+
+        if not user_id:
+            return jsonify({
+                "error": "User ID is required"
+            }), 400
+        
+        image_path = None
+
+        if image and allowed_files(image.filename):
+            filename = secure_filename(image.filename)
+            save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            image.save(save_path)
+            image_path = filename 
+
+        timestamp = datetime.utcnow().isoformat()
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("INSERT INTO posts (user_id, content, image_path, timestamp) VALUES(?,?,?,?)", (user_id, content, image_path, timestamp))
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            "message": "Post created successfully"
+        })
+    
+    # get posts
+    @app.route("/posts", methods=["GET"])
+    def get_posts():
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT posts.id, posts.content, posts.image_path, posts.timestamp, users.user_name
+            FROM posts
+            JOIN users ON posts.user_id = users.id
+            ORDER BY posts.id DESC
+        """)
+
+        rows = cursor.fetchall()
+        conn.close()
+
+        return jsonify([
+            {
+                "id": r[0],
+                "content": r[1],
+                "image": r[2],
+                "timestamp": r[3],
+                "user": r[4]
+            }
+            for r in rows
+        ])
