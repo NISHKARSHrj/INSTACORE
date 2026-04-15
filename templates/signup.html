@@ -1,22 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/style.css">
-    <title>login</title>
-</head>
-<body class="login">
-    <h1>INSTACORE</h1>
-    <p>share moments, connect with people</p>
-    <h2>LOGIN</h2>
-    <p>USERNAME</p>
-    <input type="text" placeholder="Enter your username">
-    <p>PASSWORD</p>
-    <input type="password" placeholder="Enter your password">
-    <button>SIGN UP</button>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>InstaCore — Sign Up</title>
 
-    <p class="signupmsg"></p>
-    <p>Already have an account? <a href="/login">Login</a></p>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+
+  <!-- Shared stylesheet — same file used by login and feed pages -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body class="auth-page">
+
+<div class="card">
+  <div class="brand">instacore</div>
+  <div class="brand-tagline">join the community today</div>
+
+  <div class="tabs">
+    <a href="/login">log in</a>
+    <a href="/signup" class="active">sign up</a>
+  </div>
+
+  
+    <div class="field">
+      <label>username</label>
+      <input id="signupname" type="text" placeholder="pick a username" required/>
+    </div>
+    <div class="field">
+      <label>password</label>
+      <input id="signuppassword" type="password" placeholder="••••••••" required/>
+    </div>
+    <button class="btn" onclick="signup()">create account</button>
+  
+    <p id="signup-message"></p>
+  
+</div>
+<script src="/static/auth.js"></script>
 </body>
 </html>

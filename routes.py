@@ -60,7 +60,9 @@ def register_routes(app):
         cursor.execute("INSERT INTO users (user_name, user_password) VALUES (?, ?)", (name, password))
         conn.commit()
         conn.close()
-        return redirect("/login")
+        return jsonify({
+        "message": "Signup successful"
+        })
     
     # login in the application
     @app.route("/login", methods=["GET", "POST"])
@@ -88,12 +90,16 @@ def register_routes(app):
         
         session["user_id"] = user[0]
 
-        return redirect("/feed")
+        return jsonify({
+        "message": "Login successful"
+        })
     
     @app.route("/logout")
     def logout():
         session.clear()
-        return redirect("/login")
+        return jsonify({
+            "message": "Logged out successfully"
+        })
     # post a new post
     @app.route("/posts", methods = ["POST"])
     def create_post():

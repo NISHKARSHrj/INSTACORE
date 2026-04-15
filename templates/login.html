@@ -1,22 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/style.css">
-    <title>login</title>
-</head>
-<body class="login">
-    <h1>INSTACORE</h1>
-    <p>share moments, connect with people</p>
-    <h2>LOGIN</h2>
-    <p>USERNAME</p>
-    <input type="text" placeholder="Enter your username">
-    <p>PASSWORD</p>
-    <input type="password" placeholder="Enter your password">
-    <button>LOG IN</button>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>InstaCore — Login</title>
 
-    <p class="loginmsg"></p>
-    <p>Don't have an account?<a href="/signup"> Register here</a></p>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+
+  <!--
+    url_for('static', filename='style.css') generates: /static/style.css
+    Flask automatically serves anything inside your /static/ folder.
+    So put style.css in:  your_project/static/style.css
+  -->
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<!-- body.auth-page triggers the flexbox centering in style.css -->
+<body class="auth-page">
+
+<div class="card">
+  <div class="brand">instacore</div>
+  <div class="brand-tagline">share moments, connect with people</div>
+
+  <div class="tabs">
+    <a href="/login" class="active">log in</a>
+    <a href="/signup">sign up</a>
+  </div>
+
+
+  
+    <div class="field">
+      <label>username</label>
+      
+      <input id="loginname" type="text" placeholder="your username" required/>
+    </div>
+    <div class="field">
+      <label>password</label>
+      <input id="loginpassword" type="password"  placeholder="••••••••" required/>
+    </div>
+    <button type="submit" class="btn" onclick="login()">log in</button>
+    <p id="login-message"></p>
+</div>
+
+<script src="/static/auth.js"></script>
+
 </body>
 </html>
