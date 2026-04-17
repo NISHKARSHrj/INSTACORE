@@ -1,7 +1,10 @@
-import sqlite3
+import psycopg2
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 def get_connection():
-    return sqlite3.connect("database.db")
+    return psycopg2.connect(os.getenv("DATABASE_URL"))
 
 def init_db():
     conn = get_connection()
@@ -9,27 +12,26 @@ def init_db():
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_name TEXT UNIQUE NOT NULL,
-            user_password TEXT NOT NULL
+        id SERIAL PRIMARY KEY,
+        user_name TEXT UNIQUE NOT NULL,
+        user_password TEXT NOT NULL
         )
     """)
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS posts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            
-            content TEXT,
-            image_path TEXT,
-            timestamp TEXT    
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER,
+        content TEXT,
+        image_path TEXT,
+        timestamp TEXT    
                    
         )
     """)
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS likes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             user_id INTEGER,
             post_id INTEGER
         )

@@ -51,21 +51,28 @@ def register_routes(app):
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM users WHERE user_name = ?", (name,))
+        cursor.execute("SELECT * FROM users WHERE user_name = %s", (name,))
         if cursor.fetchone():
             conn.close()
             return jsonify({
                 "error": "User already exists"
             }), 400
-        
-        cursor.execute("INSERT INTO users (user_name, user_password) VALUES (?, ?)", (name, password))
-        conn.commit()
-        conn.close()
-        return jsonify({
-        "message": "Signup successful"
-        })
+        try:
+            cursor.execute("INSERT INTO users (user_name, user_password) VALUES (%s, %s)", (name, password))
+            conn.commit()
+            return jsonify({
+            "message": "Signup successful"
+            })
     
-    # login in the application
+        except:
+            conn.rollback()
+            conn.close()
+            return jsonify({
+                "error": "USER already exists"
+            }), 400
+        conn.close()
+
+ # login in the application
     @app.route("/login", methods=["GET", "POST"])
     def login():
         if request.method == "GET":
@@ -79,7 +86,7 @@ def register_routes(app):
         cursor = conn.cursor()
 
         cursor.execute(
-            "SELECT * FROM users WHERE user_name = ? AND user_password = ?", (name, password)
+            "SELECT * FROM users WHERE user_name = %s AND user_password = %s", (name, password)
         )
         user = cursor.fetchone()
         conn.close()
@@ -102,6 +109,7 @@ def register_routes(app):
         return jsonify({
             "message": "Logged out successfully"
         })
+    
     @app.route("/me")
     def me():
         if "user_id" not in session:
@@ -135,7 +143,7 @@ def register_routes(app):
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("INSERT INTO posts (user_id, content, image_path, timestamp) VALUES(?,?,?,?)", (user_id, content, image_path, timestamp))
+        cursor.execute("INSERT INTO posts (user_id, content, image_path, timestamp) VALUES(%s,%s,%s,%s)", (user_id, content, image_path, timestamp))
 
         conn.commit()
         conn.close()
@@ -155,7 +163,7 @@ def register_routes(app):
             FROM posts
             JOIN users ON posts.user_id = users.id
             LEFT JOIN likes ON posts.id = likes.post_id
-            GROUP BY posts.id
+            GROUP BY posts.id, posts.content, posts.image_path, posts.timestamp, users.user_name, posts.user_id
             ORDER BY posts.id DESC
         """)
 
@@ -189,15 +197,15 @@ def register_routes(app):
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM likes WHERE user_id = ? AND post_id = ?", (user_id, post_id))
+        cursor.execute("SELECT * FROM likes WHERE user_id = %s AND post_id = %s", (user_id, post_id))
 
         existing = cursor.fetchone()
         if existing:
             # unlike
-            cursor.execute("DELETE FROM likes WHERE user_id = ? AND post_id = ?", (user_id, post_id))
+            cursor.execute("DELETE FROM likes WHERE user_id = %s AND post_id = %s", (user_id, post_id))
             action = "unliked"
         else:
-            cursor.execute("INSERT INTO likes (user_id, post_id) VALUES (?, ?)", (user_id,post_id))
+            cursor.execute("INSERT INTO likes (user_id, post_id) VALUES (%s, %s)", (user_id,post_id))
             action = "liked"
 
         conn.commit()
@@ -219,7 +227,7 @@ def register_routes(app):
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,)), 200
+        cursor.execute("DELETE FROM posts WHERE id = %s", (post_id,)), 200
         conn.commit()
         conn.close()
 
@@ -239,8 +247,8 @@ def register_routes(app):
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("DELETE FROM users WHERE id = ?", (user_id,)), 200
-        cursor.execute("DELETE FROM posts WHERE user_id = ?", (user_id,))
+        cursor.execute("DELETE FROM users WHERE id = %s", (user_id,)), 200
+        cursor.execute("DELETE FROM posts WHERE user_id = %s", (user_id,))
         conn.commit()
         conn.close()
 
@@ -266,9 +274,9 @@ def register_routes(app):
 
         cursor.execute("""
             UPDATE posts
-            SET content = ?
-            WHERE id = ?
-        """), (content, post_id)
+            SET content = %s
+            WHERE id = %s
+        """, (content, post_id))
 
         conn.commit()
         conn.close()
